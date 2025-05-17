@@ -21,11 +21,32 @@ class RemoteOKScraper(BaseScraper):
             except (ValueError, TypeError):
                 timestamp = int(datetime.now().timestamp())
 
+            # Parse salary range if available
+            salary_str = item.get("salary", "")
+            salary_min = None
+            salary_max = None
+            if salary_str:
+                try:
+                    # Remove currency symbols and 'k' suffix, convert to float
+                    salary_clean = salary_str.replace("$", "").replace("k", "000")
+                    if "-" in salary_clean:
+                        min_str, max_str = salary_clean.split("-")
+                        salary_min = float(min_str.strip())
+                        salary_max = float(max_str.strip())
+                    else:
+                        salary_val = float(salary_clean)
+                        salary_min = salary_max = salary_val
+                except (ValueError, TypeError):
+                    pass
+
             job = JobListing(
                 url=item.get("url", ""),
                 content=item.get("description", ""),
                 published_at=datetime.fromtimestamp(timestamp, UTC),
-                created_at=datetime.now(UTC)
+                created_at=datetime.now(UTC),
+                location=item.get("location"),
+                salary_min=salary_min,
+                salary_max=salary_max
             )
             jobs.append(job)
 

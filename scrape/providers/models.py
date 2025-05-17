@@ -8,6 +8,8 @@ class JobListing(BaseModel):
     _checksum: str = ""
     published_at: datetime = datetime.now(UTC)
     created_at: datetime = datetime.now(UTC)
+    salary_min: float | None = None
+    salary_max: float | None = None
 
     @property
     def checksum(self) -> str:

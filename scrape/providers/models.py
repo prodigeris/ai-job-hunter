@@ -3,6 +3,7 @@ from datetime import datetime, UTC
 from hashlib import md5
 
 class JobListing(BaseModel):
+    id: int | None = None
     url: HttpUrl
     content: str
     _checksum: str = ""
@@ -10,6 +11,8 @@ class JobListing(BaseModel):
     created_at: datetime = datetime.now(UTC)
     salary_min: float | None = None
     salary_max: float | None = None
+    location: str | None = None
+    title: str | None = None
 
     @property
     def checksum(self) -> str:

@@ -46,7 +46,8 @@ class RemoteOKScraper(BaseScraper):
                 created_at=datetime.now(UTC),
                 location=item.get("location"),
                 salary_min=salary_min,
-                salary_max=salary_max
+                salary_max=salary_max,
+                title=item.get("position")
             )
             jobs.append(job)
 

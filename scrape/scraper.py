@@ -1,8 +1,5 @@
 from typing import List, Type
-from datetime import datetime, UTC
-from hashlib import md5
-from pydantic import BaseModel, HttpUrl
-from providers import JobListing
+from .providers.models import JobListing
 
 class Scraper:
     def __init__(self, providers: List[Type]):

@@ -2,6 +2,7 @@ import sqlite3
 from pathlib import Path
 from datetime import datetime
 from scrape.providers.models import JobListing
+from analyze.models import AnalyzedJob
 
 class SQLiteStore:
     def __init__(self, db_path: str | Path = "data/jobs.db"):
@@ -29,6 +30,7 @@ class SQLiteStore:
                 salary_min REAL,
                 salary_max REAL,
                 location TEXT,
+                title TEXT,
                 UNIQUE(checksum)
             )
         """)
@@ -48,15 +50,14 @@ class SQLiteStore:
             )
         """)
         self.conn.commit()
-    
     def insert_job(self, job: JobListing) -> bool:
         """Insert a job listing into the database. Returns True if inserted, False if already exists."""
         cursor = self.conn.cursor()
         try:
             cursor.execute("""
-                INSERT INTO job_listings 
-                (url, content, checksum, published_at, created_at, salary_min, salary_max, location)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT OR IGNORE INTO job_listings 
+                (url, content, checksum, published_at, created_at, salary_min, salary_max, location, title)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 str(job.url),
                 job.content,
@@ -65,13 +66,14 @@ class SQLiteStore:
                 job.created_at,
                 job.salary_min,
                 job.salary_max,
-                job.location
+                job.location,
+                job.title
             ))
             self.conn.commit()
-            return True
-        except sqlite3.IntegrityError:
+            return cursor.rowcount > 0
+        except sqlite3.Error:
             return False
-    
+        
     def get_job_by_checksum(self, checksum: str) -> JobListing | None:
         """Retrieve a job listing by its checksum."""
         cursor = self.conn.cursor()
@@ -91,7 +93,8 @@ class SQLiteStore:
             created_at=datetime.fromisoformat(row['created_at']),
             salary_min=row['salary_min'],
             salary_max=row['salary_max'],
-            location=row['location']
+            location=row['location'],
+            title=row['title']
         )
     
     def get_all_jobs(self) -> list[JobListing]:
@@ -108,7 +111,8 @@ class SQLiteStore:
                 created_at=datetime.fromisoformat(row['created_at']),
                 salary_min=row['salary_min'],
                 salary_max=row['salary_max'],
-                location=row['location']
+                location=row['location'],
+                title=row['title']
             )
             for row in rows
         ]
@@ -118,12 +122,13 @@ class SQLiteStore:
         cursor = self.conn.cursor()
         rows = cursor.execute("""
             SELECT jl.* FROM job_listings jl
-            LEFT JOIN analyzed_jobs aj ON jl.checksum = aj.job_listing_id 
+            LEFT JOIN analyzed_jobs aj ON jl.id = aj.job_listing_id 
             WHERE aj.job_listing_id IS NULL
         """).fetchall()
         
         return [
             JobListing(
+                id=row['id'],
                 url=row['url'],
                 content=row['content'],
                 _checksum=row['checksum'],
@@ -131,10 +136,35 @@ class SQLiteStore:
                 created_at=datetime.fromisoformat(row['created_at']),
                 salary_min=row['salary_min'],
                 salary_max=row['salary_max'],
-                location=row['location']
+                location=row['location'],
+                title=row['title']
             )
             for row in rows
         ]
+    
+    def save_analysis(self, analysis: AnalyzedJob) -> bool:
+        """Save job analysis results to the database."""
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("""
+                INSERT INTO analyzed_jobs 
+                (job_listing_id, url, salary_from, salary_to, is_remote_score, is_applicable_score, is_european_score, analyzed_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                analysis.job_listing_id,
+                str(analysis.url), 
+                analysis.salary_from,
+                analysis.salary_to,
+                analysis.is_remote_score,
+                analysis.is_applicable_score,
+                analysis.is_european_score,
+                analysis.analyzed_at
+            ))
+            self.conn.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Failed to save analysis: {e}")
+            return False
     
     def __del__(self):
         """Ensure database connection is closed when object is destroyed."""

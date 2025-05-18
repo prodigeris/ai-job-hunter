@@ -1,0 +1,99 @@
+{
+  "job_id": 4,
+  "url": "https://remoteok.com/remote-jobs/remote-lifecycle-marketing-associate-blueland-1093188",
+  "response": {
+    "id": "resp_682a32ad3d948191afab6fcef6c3d13309d52a155c95a7f4",
+    "created_at": 1747595949.0,
+    "error": null,
+    "incomplete_details": null,
+    "instructions": null,
+    "metadata": {},
+    "model": "gpt-4o-mini-2024-07-18",
+    "object": "response",
+    "output": [
+      {
+        "id": "msg_682a32ad7a808191a1627543371f7c4709d52a155c95a7f4",
+        "content": [
+          {
+            "annotations": [],
+            "text": "{\"salary_from\":40000,\"salary_to\":80000,\"is_remote_score\":0.7,\"is_applicable_score\":1.0,\"is_european_score\":0.9}",
+            "type": "output_text"
+          }
+        ],
+        "role": "assistant",
+        "status": "completed",
+        "type": "message"
+      }
+    ],
+    "parallel_tool_calls": true,
+    "temperature": 1.0,
+    "tool_choice": "auto",
+    "tools": [],
+    "top_p": 1.0,
+    "max_output_tokens": 2048,
+    "previous_response_id": null,
+    "reasoning": {
+      "effort": null,
+      "generate_summary": null,
+      "summary": null
+    },
+    "service_tier": "default",
+    "status": "completed",
+    "text": {
+      "format": {
+        "name": "job_position_score",
+        "schema_": {
+          "type": "object",
+          "properties": {
+            "salary_from": {
+              "type": "number",
+              "description": "Minimum salary for the position, can be null."
+            },
+            "salary_to": {
+              "type": "number",
+              "description": "Maximum salary for the position, can be null."
+            },
+            "is_remote_score": {
+              "type": "number",
+              "description": "Score indicating how likely that the position is remote, on a scale of 0 to 1."
+            },
+            "is_applicable_score": {
+              "type": "number",
+              "description": "Score how directly the job involves backend engineering. Use:\n            - 1.0 for pure backend engineers (working with APIs, databases, services).\n            - 0.8 for fullstack or DevOps engineers (who also work on backend).\n            - 0.5 for frontend or mobile developers.\n            - 0.2 for adjacent IT roles (data, QA, PM).\n            - 0.0 for all non-technical roles (marketing, recruiting, HR, design, social media).             Do not assign a value > 0.0 unless the role involves writing code for backend systems."
+            },
+            "is_european_score": {
+              "type": "number",
+              "description": "Score indicating how likely that the employee can be located in the EU, on a scale of 0 to 1."
+            }
+          },
+          "required": [
+            "salary_from",
+            "salary_to",
+            "is_remote_score",
+            "is_applicable_score",
+            "is_european_score"
+          ],
+          "additionalProperties": false
+        },
+        "type": "json_schema",
+        "description": null,
+        "strict": true
+      }
+    },
+    "truncation": "disabled",
+    "usage": {
+      "input_tokens": 304,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens": 41,
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      },
+      "total_tokens": 345
+    },
+    "user": null,
+    "store": true
+  },
+  "timestamp": "2025-05-18T19:19:10.048376+00:00"
+}

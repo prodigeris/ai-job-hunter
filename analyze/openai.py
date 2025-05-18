@@ -3,6 +3,7 @@ from datetime import datetime, UTC
 from .models import AnalyzedJob
 from dotenv import load_dotenv
 import json
+import os
 
 load_dotenv()
 
@@ -24,7 +25,7 @@ def analyze_job_listing(job_description: str, job_id: int, url: str, salary_from
         AnalyzedJob containing salary range and various job scores
     """
 
-    job_description = f"""
+    job = f"""
     Job description: {job_description}
     Salary range: {f'${salary_from:,.0f}-${salary_to:,.0f}' if salary_from and salary_to else 'Not specified'}
     Location: {location if location else 'Not specified'}
@@ -32,23 +33,14 @@ def analyze_job_listing(job_description: str, job_id: int, url: str, salary_from
     """
 
     response = client.responses.create(
-  model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+  model="gpt-4o-mini",
   input=[
-    {
-      "role": "system",
-      "content": [
-        {
-          "type": "input_text",
-          "text": "You are AI assistant that helps me classify job listings."
-        }
-      ]
-    },
     {
       "role": "user",
       "content": [
         {
           "type": "input_text",
-          "text": "Analyze this job description into json\n\n\"\"\"\n Job description: {job_description}"
+          "text": f"Analyze this job description into json\n\n\"\"\"\n{job}\"\"\""
           }
       ]
     }
@@ -61,39 +53,33 @@ def analyze_job_listing(job_description: str, job_id: int, url: str, salary_from
       "schema": {
         "type": "object",
         "properties": {
-          "salary_from": {
+          "yearly_salary_from": {
             "type": "number",
-            "description": "Minimum salary for the position, can be null."
+            "description": "Minimum yearly salary in USD for the position, can be null."
           },
-          "salary_to": {
+          "yearly_salary_to": {
             "type": "number",
-            "description": "Maximum salary for the position, can be null."
+            "description": "Maximum yearly salary in USD for the position, can be null."
           },
-          "is_remote_score": {
+          "how_likely_remote_role": {
             "type": "number",
             "description": "Score indicating how likely that the position is remote, on a scale of 0 to 1."
           },
-          "is_applicable_score": {
+          "is_backend_role": {
             "type": "number", 
-            "description": "Score how directly the job involves backend engineering based on the job title. Use:\n\
-            - 1.0 for pure backend engineers (working with APIs, databases, services).\n\
-            - 0.8 for fullstack or DevOps engineers (who also work on backend).\n\
-            - 0.5 for frontend or mobile developers.\n\
-            - 0.2 for adjacent IT roles (data, QA, PM).\n\
-            - 0.0 for all non-technical roles (marketing, recruiting, HR, design, social media). \
-            Do not assign a value > 0.0 unless the role involves writing code for backend systems."
+            "description": "Is it a backend engineering or fullstack engineering role? Any other role is false, 0 for false, 1 for true."
           },
-          "is_european_score": {
+          "can_work_from_eu": {
             "type": "number",
-            "description": "Score indicating how likely that the employee can be located in the EU, on a scale of 0 to 1."
+            "description": "How likely that I can work from the EU for this role, on a scale of 0 to 1."
           }
         },
         "required": [
-          "salary_from",
-          "salary_to",
-          "is_remote_score",
-          "is_applicable_score",
-          "is_european_score"
+          "yearly_salary_from",
+          "yearly_salary_to",
+          "how_likely_remote_role",
+          "is_backend_role",
+          "can_work_from_eu"
         ],
         "additionalProperties": False
       }
@@ -107,24 +93,15 @@ def analyze_job_listing(job_description: str, job_id: int, url: str, salary_from
   store=True
 )
     
-    # Save response to output.json for analysis
-    with open("data/output_{job_id}.json", "w") as f:
-        json.dump({
-            "job_id": job_id,
-            "url": str(url), 
-            "response": response.model_dump(),
-            "timestamp": datetime.now(UTC).isoformat()
-        }, f, indent=2)
-
     scores = json.loads(response.output[0].content[0].text)
     
     return AnalyzedJob(
         job_listing_id=job_id,
         url=str(url),  
-        salary_from=salary_from,
-        salary_to=salary_to,
-        is_remote_score=scores["is_remote_score"],
-        is_applicable_score=scores["is_applicable_score"], 
-        is_european_score=scores["is_european_score"],
+        salary_from=str(scores["yearly_salary_from"]),
+        salary_to=str(scores["yearly_salary_to"]),
+        is_remote_score=scores["how_likely_remote_role"],
+        is_applicable_score=scores["is_backend_role"], 
+        is_european_score=scores["can_work_from_eu"],
         analyzed_at=datetime.now(UTC)
     )

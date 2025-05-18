@@ -11,6 +11,7 @@ An intelligent job hunting assistant that automatically scrapes job listings, an
   - European location compatibility
 - **SQLite Storage**: Efficiently stores and manages job listings
 - **Real-time Updates**: Continuously monitors for new job opportunities
+- **Web Interface**: View and manage job listings through a web browser
 
 ## Prerequisites
 
@@ -32,19 +33,38 @@ pip install -r requirements.txt
 
 3. Set up your OpenAI API key:
 ```bash
-export OPENAI_API_KEY='your-api-key'
+cp .env.example .env
 ```
+Then add your OpenAI key and model you want to use.
 
 ## Usage
 
-### Scraping Jobsx
+### Running the Complete System
+
+You can run all components using the unified `main.py` script:
+
+```bash
+# Run all components (scraper, analyzer, and web interface)
+python main.py --all
+
+# Run specific components
+python main.py --scraper --analyzer  # Run scraper and analyzer
+python main.py --web                 # Run just the web interface
+
+# Enable debug logging
+python main.py --all --debug
+```
+
+### Individual Components
+
+#### Scraping Jobs
 
 To fetch new job listings:
 ```bash
 python scraper.py
 ```
 
-### Analyzing Jobs
+#### Analyzing Jobs
 
 To analyze job listings using AI:
 ```bash
@@ -60,6 +80,15 @@ Example:
 python analyzer.py --poll-interval 30 --debug
 ```
 
+#### Web Interface
+
+To start the web interface:
+```bash
+python list.py
+```
+
+The web interface will be available at `http://localhost:5000`
+
 ## Project Structure
 
 - `scrape/`: Job scraping modules
@@ -70,6 +99,8 @@ python analyzer.py --poll-interval 30 --debug
 - `analyze/`: AI analysis modules
 - `scraper.py`: Main scraping script
 - `analyzer.py`: Main analysis script
+- `list.py`: Web interface script
+- `main.py`: Unified system launcher
 
 ## License
 

@@ -9,18 +9,17 @@ class JobAnalyzer:
         self.store = store
 
     def analyze_job(self, job) -> AnalyzedJob:
-        """Mock analysis of a job. In reality, this would use NLP/AI to analyze the content."""
-        return AnalyzedJob(
-            job_listing_id=job.id,
+        """Analyze a job listing using OpenAI to extract key metrics."""
+        analysis_result = analyze_job_listing(
+            job_description=job.content,
+            job_id=job.id,
             url=job.url,
             salary_from=job.salary_min,
             salary_to=job.salary_max,
-            is_remote_score=0.8 if 'remote' in job.content.lower() else 0.2,
-            is_applicable_score=0.7,  # Mock score
-            is_european_score=0.6 if job.location and any(c in job.location.lower() for c in ['europe', 'eu', 'uk', 'germany', 'france', 'spain', 'italy']) else 0.3,
-            analyzed_at=datetime.now(UTC),
+            location=job.location,
             title=job.title
         )
+        return analysis_result
 
     def run(self, poll_interval: int = 60):
         """Continuously poll for unanalyzed jobs and analyze them."""

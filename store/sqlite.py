@@ -32,6 +32,21 @@ class SQLiteStore:
                 UNIQUE(checksum)
             )
         """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS analyzed_jobs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                job_listing_id INTEGER NOT NULL,
+                url TEXT NOT NULL,
+                salary_from REAL,
+                salary_to REAL, 
+                is_remote_score REAL NOT NULL DEFAULT 0.0,
+                is_applicable_score REAL NOT NULL DEFAULT 0.0,
+                is_european_score REAL NOT NULL DEFAULT 0.0,
+                analyzed_at TIMESTAMP NOT NULL,
+                FOREIGN KEY (job_listing_id) REFERENCES job_listings(id),
+                UNIQUE(job_listing_id)
+            )
+        """)
         self.conn.commit()
     
     def insert_job(self, job: JobListing) -> bool:
@@ -83,6 +98,29 @@ class SQLiteStore:
         """Retrieve all job listings."""
         cursor = self.conn.cursor()
         rows = cursor.execute("SELECT * FROM job_listings").fetchall()
+        
+        return [
+            JobListing(
+                url=row['url'],
+                content=row['content'],
+                _checksum=row['checksum'],
+                published_at=datetime.fromisoformat(row['published_at']),
+                created_at=datetime.fromisoformat(row['created_at']),
+                salary_min=row['salary_min'],
+                salary_max=row['salary_max'],
+                location=row['location']
+            )
+            for row in rows
+        ]
+    
+    def get_unanalyzed_jobs(self) -> list[JobListing]:
+        """Retrieve job listings that haven't been analyzed yet."""
+        cursor = self.conn.cursor()
+        rows = cursor.execute("""
+            SELECT jl.* FROM job_listings jl
+            LEFT JOIN analyzed_jobs aj ON jl.checksum = aj.job_listing_id 
+            WHERE aj.job_listing_id IS NULL
+        """).fetchall()
         
         return [
             JobListing(

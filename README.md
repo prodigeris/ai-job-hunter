@@ -4,7 +4,7 @@ An intelligent job hunting assistant that automatically scrapes job listings, an
 
 ## Features
 
-- **Job Scraping**: Automatically fetches job listings from RemoteOK
+- **Job Scraping**: Automatically fetches job listings from differnet listing boards.
 - **AI Analysis**: Uses OpenAI to analyze job listings for:
   - Remote work compatibility
   - Job relevance
@@ -12,6 +12,11 @@ An intelligent job hunting assistant that automatically scrapes job listings, an
 - **SQLite Storage**: Efficiently stores and manages job listings
 - **Real-time Updates**: Continuously monitors for new job opportunities
 - **Web Interface**: View and manage job listings through a web browser
+
+### Job boards
+Currently supported job boards:
+- [RemoteOK](https://remoteok.com/) - ✅ Remote jobs from around the world
+- [GolangProjects](https://golangprojects.com/) - 🚧 Coming soon!
 
 ## Prerequisites
 
@@ -104,6 +109,6 @@ The web interface will be available at `http://localhost:5000`
 
 ## License
 
-MIT
+[MIT](LICENSE)
 
 
